@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+@theme {
+  /* Single brand hue: blue. Full numeric scale + semantic aliases. */
+  --color-primary-50: #EFF6FF;
+  --color-primary-100: #DBEAFE;
+  --color-primary-200: #BFDBFE;
+  --color-primary-300: #93C5FD;
+  --color-primary-400: #60A5FA;
+  --color-primary-500: #3B82F6;
+  --color-primary-600: #2563EB;
+  --color-primary-700: #1D4ED8;
+  --color-primary-800: #1E40AF;
+  --color-primary-900: #1E3A8A;
+
+  --color-primary: #2563EB;
+  --color-primary-light: #3B82F6;
+  --color-primary-dark: #1D4ED8;
+  --color-primary-surface: #EFF6FF;
+
+  --color-surface: #F8FAFC;
+  --color-surface-card: #FFFFFF;
+  --color-surface-muted: #F1F5F9;
+  --color-surface-border: #E2E8F0;
+  --color-surface-border-strong: #CBD5E1;
+
+  --color-charcoal: #0F172A;
+  --color-charcoal-muted: #64748B;
+  --color-charcoal-subtle: #94A3B8;
+
+  --font-heading: var(--font-work-sans), system-ui, -apple-system, sans-serif;
+  --font-body: var(--font-work-sans), system-ui, -apple-system, sans-serif;
+
+  --radius-sm: 4px;
+  --radius-DEFAULT: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+}
+
+:root {
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+  --app-bottom-nav-height: 60px;
+}
+
+html {
+  height: 100%;
+  /* Prevent iOS/Android text zoom on rotate & keep the app feeling fixed-scale */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* App-like touch feel */
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  /* Guard against any element pushing the page wider than the viewport */
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar (desktop only in practice, harmless on mobile) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F8FAFC;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2563EB;
+}
+
+/* Utility classes for modern card styling */
+.app-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.app-card-hover {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.app-card-hover:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+}
+
+/* Space reserved at the bottom of the page on mobile so content never sits
+   underneath the fixed app-style bottom tab bar. */
+.pb-app-nav {
+  padding-bottom: calc(var(--app-bottom-nav-height) + env(safe-area-inset-bottom));
+}
+
+/* Safe-area helpers for the bottom tab bar itself */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Hide scrollbar on horizontally-scrolling pill/tab rows while keeping the
+   native scroll gesture — used by mobile filter/type tab strips. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
