@@ -59,6 +59,18 @@ export const HostelCard: React.FC<HostelCardProps> = ({
   hasAC = true,
   hasWifi = true,
 }) => {
+  const [imgSrc, setImgSrc] = React.useState<string>(
+    coverImage && coverImage.trim() !== ""
+      ? coverImage
+      : "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80"
+  );
+
+  React.useEffect(() => {
+    if (coverImage && coverImage.trim() !== "") {
+      setImgSrc(coverImage);
+    }
+  }, [coverImage]);
+
   const typeBadgeVariant = "primary" as const;
 
   const typeLabel =
@@ -73,11 +85,14 @@ export const HostelCard: React.FC<HostelCardProps> = ({
       {/* Photo Column */}
       <div className="relative w-full md:w-64 lg:w-72 h-48 md:h-auto shrink-0 bg-slate-100 overflow-hidden">
         <Image
-          src={coverImage || "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80"}
+          src={imgSrc}
           alt={name}
           fill
           sizes="(max-width: 768px) 100vw, 300px"
           className="object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={() => {
+            setImgSrc("https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80");
+          }}
         />
 
         {/* Overlay Badges */}

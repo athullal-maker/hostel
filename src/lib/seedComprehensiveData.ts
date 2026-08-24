@@ -320,9 +320,10 @@ export async function seedComprehensiveData() {
         foodType:
           "Delicious 3-time South & North Indian meals included. Filtered RO water and microwave available on every floor.",
         coverImage:
-          "https://images.unsplash.com/photo-1540518614846-7ede433c4550?auto=format&fit=crop&w=1200&q=80",
+          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80",
         galleryImages: [
-          "https://images.unsplash.com/photo-1540518614846-7ede433c4550?auto=format&fit=crop&w=1000&q=80",
+          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1000&q=80",
+          "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1000&q=80",
         ],
         startingPrice: 6000,
         totalCapacity: 35,
