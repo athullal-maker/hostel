@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { seedKeralaLocations } from "@/lib/seedKeralaLocations";
+import { seedComprehensiveData } from "@/lib/seedComprehensiveData";
 
 export async function POST() {
   try {
-    const result = await seedKeralaLocations();
+    const result = await seedComprehensiveData();
     return NextResponse.json({
       success: true,
-      message: "Kerala locations seeded successfully",
+      message: "Comprehensive database seed completed successfully",
       data: result,
     });
   } catch (error) {

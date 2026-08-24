@@ -23,15 +23,16 @@ export const authOptions: NextAuthOptions = {
         }
 
         await connectDB();
-        const user = await User.findOne({ email: credentials.email.toLowerCase() });
+        const user = await User.findOne({ email: credentials.email.toLowerCase().trim() });
 
-        if (!user || !user.passwordHash) {
+        const hash = user?.passwordHash || (user as any)?.password;
+        if (!user || !hash) {
           throw new Error("No user found with this email");
         }
 
         const isPasswordMatch = await bcrypt.compare(
           credentials.password,
-          user.passwordHash
+          hash
         );
 
         if (!isPasswordMatch) {

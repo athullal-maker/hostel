@@ -1,21 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Work_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import MobileTabBar from "@/components/layout/MobileTabBar";
 import AuthProvider from "@/components/providers/AuthProvider";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
   subsets: ["latin"],
   display: "swap",
-});
-
-const workSans = Work_Sans({
-  variable: "--font-work-sans",
-  subsets: ["latin"],
-  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -28,7 +23,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#2563EB",
+  themeColor: "#9333EA",
 };
 
 export default function RootLayout({
@@ -39,7 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${workSans.variable} h-full antialiased`}
+      className={`${plusJakartaSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-surface text-charcoal font-body selection:bg-primary-50 selection:text-primary-dark">
         <AuthProvider>

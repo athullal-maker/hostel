@@ -44,8 +44,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        heading: ["var(--font-work-sans)", "system-ui", "-apple-system", "sans-serif"],
-        body: ["var(--font-work-sans)", "system-ui", "-apple-system", "sans-serif"],
+        heading: ["var(--font-plus-jakarta)", "Plus Jakarta Sans", "system-ui", "-apple-system", "sans-serif"],
+        body: ["var(--font-plus-jakarta)", "Plus Jakarta Sans", "system-ui", "-apple-system", "sans-serif"],
       },
       borderRadius: {
         sm: "4px",

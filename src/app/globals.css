@@ -36,8 +36,8 @@
   --color-charcoal-muted: #526071;
   --color-charcoal-subtle: #8896A6;
 
-  --font-heading: var(--font-work-sans), system-ui, -apple-system, sans-serif;
-  --font-body: var(--font-work-sans), system-ui, -apple-system, sans-serif;
+  --font-heading: var(--font-plus-jakarta), "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-body: var(--font-plus-jakarta), "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
 
   --radius-sm: 4px;
   --radius-DEFAULT: 6px;

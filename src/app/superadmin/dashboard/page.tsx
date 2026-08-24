@@ -23,6 +23,7 @@ import {
   FileText,
   Building,
   Loader2,
+  Edit2,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
@@ -64,6 +65,25 @@ export default function SuperAdminDashboardPage() {
     phone: "",
     password: "",
     assignedHostel: "Green Valley Executive PG for Men",
+  });
+
+  // Edit Admin Modal State
+  const [editAdminModal, setEditAdminModal] = useState<{
+    isOpen: boolean;
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+    assignedHostelId: string;
+  }>({
+    isOpen: false,
+    id: "",
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    assignedHostelId: "",
   });
 
   // Live Database States
@@ -185,6 +205,49 @@ export default function SuperAdminDashboardPage() {
     } catch (err) {
       console.error("Failed to provision admin:", err);
       alert("An error occurred while provisioning admin");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdateAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editAdminModal.name || !editAdminModal.email) return;
+
+    try {
+      setIsSubmitting(true);
+      const res = await fetch("/api/superadmin/admins", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editAdminModal.id,
+          name: editAdminModal.name,
+          email: editAdminModal.email,
+          phone: editAdminModal.phone,
+          password: editAdminModal.password,
+          assignedHostelId: editAdminModal.assignedHostelId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to update admin");
+        return;
+      }
+
+      alert(data.message || "Admin account updated successfully!");
+      setEditAdminModal({
+        isOpen: false,
+        id: "",
+        name: "",
+        email: "",
+        phone: "",
+        password: "",
+        assignedHostelId: "",
+      });
+      fetchDashboardData();
+    } catch (err) {
+      console.error("Failed to update admin:", err);
+      alert("An error occurred while updating admin");
     } finally {
       setIsSubmitting(false);
     }
@@ -578,7 +641,24 @@ export default function SuperAdminDashboardPage() {
                       {a.hostelName}
                     </td>
                     <td className="py-3 px-4 text-neutral-500">{a.createdAt}</td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-right space-x-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditAdminModal({
+                            isOpen: true,
+                            id: a.id,
+                            name: a.name,
+                            email: a.email,
+                            phone: a.phone || "",
+                            password: "",
+                            assignedHostelId: a.hostelId || "",
+                          })
+                        }
+                        className="px-3 py-1.5 bg-white text-black hover:bg-neutral-100 border border-neutral-300 font-bold text-xs rounded-[6px] transition-colors cursor-pointer inline-flex items-center gap-1"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" /> Edit
+                      </button>
                       <button
                         type="button"
                         onClick={() =>
@@ -594,7 +674,7 @@ export default function SuperAdminDashboardPage() {
                         }
                         className="px-3 py-1.5 bg-white text-black hover:bg-neutral-100 border border-neutral-300 font-bold text-xs rounded-[6px] transition-colors cursor-pointer inline-flex items-center gap-1"
                       >
-                        <Trash2 className="w-3.5 h-3.5" /> Delete Admin
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
                       </button>
                     </td>
                   </tr>
@@ -620,7 +700,24 @@ export default function SuperAdminDashboardPage() {
                   Property: {a.hostelName}
                 </div>
 
-                <div className="flex justify-end pt-1">
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditAdminModal({
+                        isOpen: true,
+                        id: a.id,
+                        name: a.name,
+                        email: a.email,
+                        phone: a.phone || "",
+                        password: "",
+                        assignedHostelId: a.hostelId || "",
+                      })
+                    }
+                    className="flex-1 py-2 bg-white text-black hover:bg-neutral-100 border border-neutral-300 font-bold text-xs rounded-[6px] transition-colors cursor-pointer flex items-center justify-center gap-1"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" /> Edit
+                  </button>
                   <button
                     type="button"
                     onClick={() =>
@@ -634,9 +731,9 @@ export default function SuperAdminDashboardPage() {
                         targetId: a.id,
                       })
                     }
-                    className="w-full py-2 bg-white text-black hover:bg-neutral-100 border border-neutral-300 font-bold text-xs rounded-[6px] transition-colors cursor-pointer flex items-center justify-center gap-1"
+                    className="flex-1 py-2 bg-white text-black hover:bg-neutral-100 border border-neutral-300 font-bold text-xs rounded-[6px] transition-colors cursor-pointer flex items-center justify-center gap-1"
                   >
-                    <Trash2 className="w-3.5 h-3.5" /> Delete Admin Privileges
+                    <Trash2 className="w-3.5 h-3.5" /> Delete
                   </button>
                 </div>
               </div>
@@ -905,9 +1002,117 @@ export default function SuperAdminDashboardPage() {
                 </button>
                 <button
                   type="submit"
+                  disabled={isSubmitting}
                   className="px-4 py-2 bg-black text-white hover:bg-neutral-800 font-bold text-xs rounded-[6px] transition-colors cursor-pointer"
                 >
-                  Provision Admin Account
+                  {isSubmitting ? "Provisioning..." : "Provision Admin Account"}
+                </button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {/* ================= EDIT ADMIN MODAL ================= */}
+      {editAdminModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60">
+          <Card padding="lg" className="max-w-md w-full bg-white space-y-4 shadow-2xl rounded-t-2xl sm:rounded-[10px] max-h-[90vh] overflow-y-auto border border-neutral-200">
+            <div className="flex items-center justify-between border-b border-neutral-200 pb-3">
+              <div className="flex items-center gap-2">
+                <Edit2 className="w-5 h-5 text-black" />
+                <h3 className="font-heading font-bold text-base text-black">
+                  Edit Hostel Admin Profile
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditAdminModal({ ...editAdminModal, isOpen: false })}
+                className="text-neutral-400 hover:text-black p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateAdmin} className="space-y-3">
+              <Input
+                label="Admin Full Name"
+                placeholder="e.g. Radhakrishnan Nair"
+                value={editAdminModal.name}
+                onChange={(e) =>
+                  setEditAdminModal({ ...editAdminModal, name: e.target.value })
+                }
+                required
+              />
+
+              <Input
+                label="Admin Login Email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="warden@hostel.in"
+                value={editAdminModal.email}
+                onChange={(e) =>
+                  setEditAdminModal({ ...editAdminModal, email: e.target.value })
+                }
+                required
+              />
+
+              <Input
+                label="Contact Phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="+91 98470 XXXXX"
+                value={editAdminModal.phone}
+                onChange={(e) =>
+                  setEditAdminModal({ ...editAdminModal, phone: e.target.value })
+                }
+              />
+
+              <Input
+                label="Reset / New Password (Optional)"
+                type="password"
+                placeholder="Leave blank to keep existing password"
+                value={editAdminModal.password}
+                onChange={(e) =>
+                  setEditAdminModal({ ...editAdminModal, password: e.target.value })
+                }
+              />
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-black uppercase tracking-wider">
+                  Assigned Hostel Property
+                </label>
+                <select
+                  value={editAdminModal.assignedHostelId}
+                  onChange={(e) =>
+                    setEditAdminModal({ ...editAdminModal, assignedHostelId: e.target.value })
+                  }
+                  className="w-full bg-white text-xs text-black p-2.5 border border-neutral-300 rounded-[6px] focus:outline-none focus:border-black cursor-pointer font-medium"
+                >
+                  <option value="">-- Unassigned (No Property Linked) --</option>
+                  {hostelsList.map((h) => (
+                    <option key={h.id} value={h.id}>
+                      {h.name} ({h.locality}, {h.city})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2 border-t border-neutral-200">
+                <button
+                  type="button"
+                  onClick={() => setEditAdminModal({ ...editAdminModal, isOpen: false })}
+                  className="px-3.5 py-2 bg-white text-black hover:bg-neutral-100 border border-neutral-300 font-bold text-xs rounded-[6px] transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-black text-white hover:bg-neutral-800 font-bold text-xs rounded-[6px] transition-colors cursor-pointer"
+                >
+                  {isSubmitting ? "Saving Changes..." : "Save Admin Changes"}
                 </button>
               </div>
             </form>

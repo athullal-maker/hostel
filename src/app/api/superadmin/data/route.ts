@@ -74,7 +74,8 @@ export async function GET(request: NextRequest) {
         id: a._id.toString(),
         name: a.name,
         email: a.email,
-        phone: a.phone || "Not provided",
+        phone: a.phone || "",
+        hostelId: assignedHostel ? assignedHostel._id.toString() : "",
         hostelName: assignedHostel ? assignedHostel.name : "Unassigned Property",
         createdAt: new Date(a.createdAt).toLocaleDateString("en-IN", {
           day: "2-digit",

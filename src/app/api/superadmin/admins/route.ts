@@ -102,6 +102,56 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user?.role !== "superadmin") {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 403 });
+    }
+
+    const { id, name, email, phone, password, assignedHostelId } = await request.json();
+    if (!id) {
+      return NextResponse.json({ success: false, error: "Admin ID is required" }, { status: 400 });
+    }
+
+    await connectDB();
+
+    const updateData: any = {};
+    if (name) updateData.name = name.trim();
+    if (email) updateData.email = email.toLowerCase().trim();
+    if (phone !== undefined) updateData.phone = phone.trim();
+    if (password && password.trim().length >= 6) {
+      const hash = await bcrypt.hash(password.trim(), 10);
+      updateData.passwordHash = hash;
+      updateData.password = hash;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, { $set: updateData }, { new: true });
+
+    if (assignedHostelId) {
+      // Reassign this hostel to the admin
+      await Hostel.updateMany({ adminId: id }, { $unset: { adminId: "" } });
+      await Hostel.findByIdAndUpdate(assignedHostelId, { $set: { adminId: id } });
+      if (updatedUser) {
+        (updatedUser as any).hostelId = assignedHostelId;
+        await updatedUser.save();
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Admin account updated successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating admin:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to update admin account" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -119,12 +169,12 @@ export async function DELETE(request: NextRequest) {
     await connectDB();
 
     await User.findByIdAndDelete(adminId);
-    // Unassign or delete hostels belonging to this admin
-    await Hostel.deleteMany({ adminId });
+    // Unassign hostels belonging to this admin
+    await Hostel.updateMany({ adminId }, { $unset: { adminId: "" } });
 
     return NextResponse.json({
       success: true,
-      message: "Admin and managed properties deleted successfully",
+      message: "Admin deleted successfully",
     });
   } catch (error) {
     console.error("Error deleting admin:", error);

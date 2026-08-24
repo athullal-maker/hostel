@@ -46,7 +46,7 @@ export const Navbar: React.FC = () => {
               </span>
             </div>
 
-            {/* Middle: Switcher & Public Link */}
+            {/* Middle: Public Link */}
             <div className="hidden md:flex items-center gap-2">
               <Link
                 href="/"
@@ -56,31 +56,6 @@ export const Navbar: React.FC = () => {
                 <ExternalLink className="w-3.5 h-3.5" />
                 View Public Site
               </Link>
-
-              {user?.role === "superadmin" && (
-                <>
-                  <Link
-                    href="/superadmin/dashboard"
-                    className={`text-xs font-bold px-3 py-1.5 rounded-[6px] transition-colors ${
-                      isSuperAdminRoute
-                        ? "bg-black text-white shadow-2xs"
-                        : "bg-white text-neutral-700 hover:text-black border border-neutral-200 hover:bg-neutral-50"
-                    }`}
-                  >
-                    Governance Portal
-                  </Link>
-                  <Link
-                    href="/admin/dashboard"
-                    className={`text-xs font-bold px-3 py-1.5 rounded-[6px] transition-colors ${
-                      pathname?.startsWith("/admin")
-                        ? "bg-black text-white shadow-2xs"
-                        : "bg-white text-neutral-700 hover:text-black border border-neutral-200 hover:bg-neutral-50"
-                    }`}
-                  >
-                    Property Admin
-                  </Link>
-                </>
-              )}
             </div>
 
             {/* Right: User Profile + Logout */}
