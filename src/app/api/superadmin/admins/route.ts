@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 403 });
     }
 
-    const { name, email, phone, password, assignedHostel } = await request.json();
+    const { name, email, phone, password, assignedHostel, assignedHostelId } = await request.json();
 
     if (!name || !email) {
       return NextResponse.json(
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const defaultPassword = password || "Admin@2026";
     const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
-    const newAdmin = await User.create({
+    const newAdmin: any = await User.create({
       name: name.trim(),
       email: email.toLowerCase().trim(),
       phone: phone?.trim() || "",
@@ -45,41 +45,49 @@ export async function POST(request: NextRequest) {
       role: "admin",
     });
 
-    // Find default city (or first available)
-    let city = await City.findOne({ slug: "kochi" });
-    if (!city) {
-      city = await City.findOne({});
-    }
+    if (assignedHostelId) {
+      // Reassign or assign an existing hostel to this new admin
+      await Hostel.findByIdAndUpdate(assignedHostelId, { $set: { adminId: newAdmin._id } });
+      newAdmin.hostelId = assignedHostelId;
+      await newAdmin.save();
+    } else if (assignedHostel && assignedHostel.trim()) {
+      // Find default city (or first available)
+      let city = await City.findOne({ slug: "kochi" });
+      if (!city) {
+        city = await City.findOne({});
+      }
 
-    // Provision the initial hostel document assigned to this admin
-    if (assignedHostel && city) {
-      await Hostel.create({
-        adminId: newAdmin._id,
-        name: assignedHostel.trim(),
-        description: `${assignedHostel} - Verified hostel accommodation with homestyle Kerala food, high-speed Wi-Fi, and 24x7 security.`,
-        cityId: city._id,
-        fullAddress: `${assignedHostel}, Kakkanad, Kochi, Kerala`,
-        location: {
-          type: "Point",
-          coordinates: [76.357, 10.0159], // Kakkanad coordinates
-        },
-        hostelType: "boys",
-        totalCapacity: 40,
-        amenities: [
-          "Homestyle Food Included",
-          "High-speed 100 Mbps Wi-Fi",
-          "Warden 24x7",
-          "Two-Wheeler Parking",
-          "RO Purified Water",
-          "Power Backup Generator",
-        ],
-        status: "approved",
-        coverImage: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80",
-        galleryImages: [
-          "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80",
-          "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80",
-        ],
-      });
+      if (city) {
+        const createdHostel: any = await Hostel.create({
+          adminId: newAdmin._id,
+          name: assignedHostel.trim(),
+          description: `${assignedHostel} - Verified hostel accommodation with homestyle Kerala food, high-speed Wi-Fi, and 24x7 security.`,
+          cityId: city._id,
+          fullAddress: `${assignedHostel}, Kakkanad, Kochi, Kerala`,
+          location: {
+            type: "Point",
+            coordinates: [76.357, 10.0159], // Kakkanad coordinates
+          },
+          hostelType: "boys",
+          totalCapacity: 40,
+          amenities: [
+            "Homestyle Food Included",
+            "High-speed 100 Mbps Wi-Fi",
+            "Warden 24x7",
+            "Two-Wheeler Parking",
+            "RO Purified Water",
+            "Power Backup Generator",
+          ],
+          status: "approved",
+          coverImage: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80",
+          galleryImages: [
+            "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80",
+          ],
+        });
+        newAdmin.hostelId = createdHostel._id;
+        await newAdmin.save();
+      }
     }
 
     return NextResponse.json({

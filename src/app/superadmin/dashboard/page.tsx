@@ -64,7 +64,9 @@ export default function SuperAdminDashboardPage() {
     email: "",
     phone: "",
     password: "",
-    assignedHostel: "Green Valley Executive PG for Men",
+    assignedHostelId: "",
+    assignedHostel: "",
+    provisionMode: "existing" as "existing" | "new",
   });
 
   // Edit Admin Modal State
@@ -181,10 +183,23 @@ export default function SuperAdminDashboardPage() {
 
     try {
       setIsSubmitting(true);
+      const payload: any = {
+        name: newAdminData.name,
+        email: newAdminData.email,
+        phone: newAdminData.phone,
+        password: newAdminData.password,
+      };
+
+      if (newAdminData.provisionMode === "existing" && newAdminData.assignedHostelId) {
+        payload.assignedHostelId = newAdminData.assignedHostelId;
+      } else if (newAdminData.provisionMode === "new" && newAdminData.assignedHostel) {
+        payload.assignedHostel = newAdminData.assignedHostel;
+      }
+
       const res = await fetch("/api/superadmin/admins", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newAdminData),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -198,7 +213,9 @@ export default function SuperAdminDashboardPage() {
         email: "",
         phone: "",
         password: "",
-        assignedHostel: "Green Valley Executive PG for Men",
+        assignedHostelId: "",
+        assignedHostel: "",
+        provisionMode: "existing",
       });
       setIsProvisionAdminOpen(false);
       fetchDashboardData();
@@ -637,8 +654,23 @@ export default function SuperAdminDashboardPage() {
                       <span className="font-medium text-black">{a.email}</span>
                       <span className="text-[11px] text-neutral-500 block">{a.phone}</span>
                     </td>
-                    <td className="py-3 px-4 text-black font-semibold">
-                      {a.hostelName}
+                    <td className="py-3 px-4">
+                      {a.hostelId ? (
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-black">{a.hostelName}</span>
+                          <Link
+                            href={`/hostel/${a.hostelId}`}
+                            target="_blank"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-neutral-700 hover:text-black bg-neutral-100 hover:bg-neutral-200 px-2 py-0.5 rounded border border-neutral-300 transition-colors"
+                          >
+                            <Eye className="w-3 h-3" /> View Hostel
+                          </Link>
+                        </div>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-neutral-100 text-neutral-500 border border-neutral-200">
+                          Unassigned Property
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-4 text-neutral-500">{a.createdAt}</td>
                     <td className="py-3 px-4 text-right space-x-2">
@@ -696,8 +728,17 @@ export default function SuperAdminDashboardPage() {
                   <span className="text-[11px] text-neutral-400">{a.createdAt}</span>
                 </div>
 
-                <div className="text-xs text-black font-semibold bg-neutral-100 border border-neutral-200 p-2 rounded-[6px]">
-                  Property: {a.hostelName}
+                <div className="text-xs text-black font-semibold bg-neutral-100 border border-neutral-200 p-2.5 rounded-[6px] flex items-center justify-between">
+                  <span>Property: {a.hostelName}</span>
+                  {a.hostelId && (
+                    <Link
+                      href={`/hostel/${a.hostelId}`}
+                      target="_blank"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-neutral-800 hover:text-black underline"
+                    >
+                      <Eye className="w-3 h-3" /> View
+                    </Link>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-end gap-2 pt-1">
@@ -981,16 +1022,78 @@ export default function SuperAdminDashboardPage() {
               />
 
               <Input
-                label="Assigned Property Name"
-                value={newAdminData.assignedHostel}
+                label="Admin Login Password (Optional)"
+                type="password"
+                placeholder="Default: Admin@2026"
+                value={newAdminData.password}
                 onChange={(e) =>
-                  setNewAdminData({
-                    ...newAdminData,
-                    assignedHostel: e.target.value,
-                  })
+                  setNewAdminData({ ...newAdminData, password: e.target.value })
                 }
-                required
               />
+
+              {/* Property Assignment Options */}
+              <div className="space-y-2 pt-1 border-t border-neutral-100">
+                <label className="block text-xs font-bold text-black uppercase tracking-wider">
+                  Hostel Assignment
+                </label>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setNewAdminData({ ...newAdminData, provisionMode: "existing" })}
+                    className={`py-1.5 px-2.5 rounded-[6px] font-bold border transition-colors cursor-pointer ${
+                      newAdminData.provisionMode === "existing"
+                        ? "bg-black text-white border-black"
+                        : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:bg-neutral-100"
+                    }`}
+                  >
+                    Assign Existing Hostel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewAdminData({ ...newAdminData, provisionMode: "new" })}
+                    className={`py-1.5 px-2.5 rounded-[6px] font-bold border transition-colors cursor-pointer ${
+                      newAdminData.provisionMode === "new"
+                        ? "bg-black text-white border-black"
+                        : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:bg-neutral-100"
+                    }`}
+                  >
+                    + Create New Hostel
+                  </button>
+                </div>
+
+                {newAdminData.provisionMode === "existing" ? (
+                  <div className="space-y-1 pt-1">
+                    <select
+                      value={newAdminData.assignedHostelId}
+                      onChange={(e) =>
+                        setNewAdminData({ ...newAdminData, assignedHostelId: e.target.value })
+                      }
+                      className="w-full bg-white text-xs text-black p-2.5 border border-neutral-300 rounded-[6px] focus:outline-none focus:border-black cursor-pointer font-medium"
+                    >
+                      <option value="">-- Select an Existing Hostel Property --</option>
+                      {hostelsList.map((h) => (
+                        <option key={h.id} value={h.id}>
+                          {h.name} ({h.locality}, {h.city})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div className="pt-1">
+                    <Input
+                      label="New Hostel Property Name"
+                      placeholder="e.g. Green Valley PG for Men"
+                      value={newAdminData.assignedHostel}
+                      onChange={(e) =>
+                        setNewAdminData({
+                          ...newAdminData,
+                          assignedHostel: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
+              </div>
 
               <div className="pt-2 flex justify-end gap-2">
                 <button

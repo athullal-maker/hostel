@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -16,7 +16,123 @@ import Card from "@/components/ui/Card";
 import HostelCard from "@/components/hostel/HostelCard";
 import SearchHeroBar from "@/components/location/SearchHeroBar";
 
+const FALLBACK_FEATURED_HOSTELS = [
+  {
+    id: "hostel-kakkanad-1",
+    name: "Green Valley Executive PG for Men",
+    hostelType: "boys" as const,
+    locality: "Kakkanad (Near Phase 1 Gate)",
+    city: "Kochi, Ernakulam",
+    distanceInfo: "350m to Infopark Main Gate",
+    coverImage: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=700&q=80",
+    startingPrice: 4800,
+    sharingPrices: [
+      { type: "Single (AC)", price: 9500, available: true },
+      { type: "2-Sharing", price: 6800, available: true },
+      { type: "3-Sharing", price: 5400, available: true },
+      { type: "4-Sharing", price: 4800, available: false },
+    ],
+    avgRating: 4.8,
+    totalReviews: 42,
+    isVerified: true,
+    foodIncluded: true,
+    foodType: "3-time Homestyle Meals Included (Non-Veg 3x/week)",
+    curfew: "No Curfew (Biometric entry for shift employees)",
+    hasAC: true,
+    hasWifi: true,
+  },
+  {
+    id: "hostel-cusat-2",
+    name: "Ahalya Heritage Ladies Hostel",
+    hostelType: "girls" as const,
+    locality: "Kalamassery (CUSAT Campus Area)",
+    city: "Kochi, Ernakulam",
+    distanceInfo: "200m to CUSAT Engineering Block",
+    coverImage: "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=700&q=80",
+    startingPrice: 4200,
+    sharingPrices: [
+      { type: "Single (AC)", price: 8500, available: false },
+      { type: "2-Sharing", price: 6000, available: true },
+      { type: "3-Sharing", price: 4800, available: true },
+      { type: "4-Sharing", price: 4200, available: true },
+    ],
+    avgRating: 4.9,
+    totalReviews: 56,
+    isVerified: true,
+    foodIncluded: true,
+    foodType: "Homestyle Kerala Meals with Vegetarian & Fish options",
+    curfew: "Gate closes 9:30 PM (Biometric security)",
+    hasAC: true,
+    hasWifi: true,
+  },
+  {
+    id: "hostel-kazhakkoottam-3",
+    name: "TechnoNest Luxury Co-Living PG",
+    hostelType: "co-ed" as const,
+    locality: "Kazhakkoottam",
+    city: "Trivandrum",
+    distanceInfo: "500m to Technopark Phase 3 Gate",
+    coverImage: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=700&q=80",
+    startingPrice: 6500,
+    sharingPrices: [
+      { type: "Studio Suite", price: 14000, available: true },
+      { type: "Single (AC)", price: 10500, available: true },
+      { type: "2-Sharing", price: 7500, available: true },
+      { type: "3-Sharing", price: 6500, available: true },
+    ],
+    avgRating: 4.7,
+    totalReviews: 38,
+    isVerified: true,
+    foodIncluded: false,
+    foodType: "Self-cooking Kitchen with induction + optional tiffin delivery",
+    curfew: "24/7 Access (Smart card locks)",
+    hasAC: true,
+    hasWifi: true,
+  },
+];
+
 export default function HomePage() {
+  const [featuredHostels, setFeaturedHostels] = useState<any[]>(FALLBACK_FEATURED_HOSTELS);
+
+  useEffect(() => {
+    async function loadLiveFeatured() {
+      try {
+        const res = await fetch("/api/hostels");
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const live = json.data.map((h: any) => ({
+            id: h._id || h.id,
+            name: h.name,
+            hostelType: h.hostelType || "boys",
+            locality: h.fullAddress?.split(",")?.[0]?.trim() || "Kerala",
+            city: h.cityId?.name || "Kochi",
+            distanceInfo: "Centrally connected",
+            coverImage: h.coverImage || "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=700&q=80",
+            startingPrice: h.startingPrice || 4800,
+            sharingPrices: h.sharingPrices && h.sharingPrices.length > 0
+              ? h.sharingPrices
+              : [
+                  { type: "2-Sharing Standard", price: h.startingPrice || 5500, available: true },
+                  { type: "3-Sharing Economy", price: (h.startingPrice || 5500) - 800, available: true },
+                ],
+            avgRating: h.avgRating || 4.8,
+            totalReviews: 14,
+            isVerified: true,
+            foodIncluded: h.amenities?.some((a: string) => a.toLowerCase().includes("food")) || false,
+            foodType: h.description || "Homestyle Kerala Meals Included",
+            curfew: h.rules || "No Night Curfew (Biometric entry)",
+            hasAC: h.amenities?.some((a: string) => a.toLowerCase().includes("ac")) || false,
+            hasWifi: h.amenities?.some((a: string) => a.toLowerCase().includes("wi-fi") || a.toLowerCase().includes("wifi")) || true,
+          }));
+          setFeaturedHostels(live);
+        }
+      } catch (err) {
+        console.error("Failed to load featured hostels:", err);
+      }
+    }
+    loadLiveFeatured();
+  }, []);
+
   const popularHubs = [
     {
       name: "Kakkanad & Infopark",
@@ -227,85 +343,14 @@ export default function HomePage() {
             href="/search"
             className="text-xs font-bold text-primary hover:underline flex items-center gap-1 py-1 -my-1 self-start sm:self-auto shrink-0"
           >
-            View All ({popularHubs.length * 8}) Listings <ArrowRight className="w-3.5 h-3.5" />
+            View All Listings <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         <div className="space-y-4">
-          <HostelCard
-            id="hostel-kakkanad-1"
-            name="Green Valley Executive PG for Men"
-            hostelType="boys"
-            locality="Kakkanad (Near Phase 1 Gate)"
-            city="Kochi, Ernakulam"
-            distanceInfo="350m to Infopark Main Gate"
-            coverImage="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=700&q=80"
-            startingPrice={4800}
-            sharingPrices={[
-              { type: "Single (AC)", price: 9500, available: true },
-              { type: "2-Sharing", price: 6800, available: true },
-              { type: "3-Sharing", price: 5400, available: true },
-              { type: "4-Sharing", price: 4800, available: false },
-            ]}
-            avgRating={4.8}
-            totalReviews={42}
-            isVerified={true}
-            foodIncluded={true}
-            foodType="3-time Homestyle Meals Included (Non-Veg 3x/week)"
-            curfew="No Curfew (Biometric entry for shift employees)"
-            hasAC={true}
-            hasWifi={true}
-          />
-
-          <HostelCard
-            id="hostel-cusat-2"
-            name="Ahalya Heritage Ladies Hostel"
-            hostelType="girls"
-            locality="Kalamassery (CUSAT Campus Area)"
-            city="Kochi, Ernakulam"
-            distanceInfo="200m to CUSAT Engineering Block"
-            coverImage="https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=700&q=80"
-            startingPrice={4200}
-            sharingPrices={[
-              { type: "Single (AC)", price: 8500, available: false },
-              { type: "2-Sharing", price: 6000, available: true },
-              { type: "3-Sharing", price: 4800, available: true },
-              { type: "4-Sharing", price: 4200, available: true },
-            ]}
-            avgRating={4.9}
-            totalReviews={56}
-            isVerified={true}
-            foodIncluded={true}
-            foodType="Homestyle Kerala Meals with Vegetarian & Fish options"
-            curfew="Gate closes 9:30 PM (Biometric security)"
-            hasAC={true}
-            hasWifi={true}
-          />
-
-          <HostelCard
-            id="hostel-kazhakkoottam-3"
-            name="TechnoNest Luxury Co-Living PG"
-            hostelType="co-ed"
-            locality="Kazhakkoottam"
-            city="Trivandrum"
-            distanceInfo="500m to Technopark Phase 3 Gate"
-            coverImage="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=700&q=80"
-            startingPrice={6500}
-            sharingPrices={[
-              { type: "Studio Suite", price: 14000, available: true },
-              { type: "Single (AC)", price: 10500, available: true },
-              { type: "2-Sharing", price: 7500, available: true },
-              { type: "3-Sharing", price: 6500, available: true },
-            ]}
-            avgRating={4.7}
-            totalReviews={38}
-            isVerified={true}
-            foodIncluded={false}
-            foodType="Self-cooking Kitchen with induction + optional tiffin delivery"
-            curfew="24/7 Access (Smart card locks)"
-            hasAC={true}
-            hasWifi={true}
-          />
+          {featuredHostels.map((hostel) => (
+            <HostelCard key={hostel.id} {...hostel} />
+          ))}
         </div>
       </section>
     </div>

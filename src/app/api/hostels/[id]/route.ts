@@ -4,6 +4,8 @@ import Hostel from "@/models/Hostel";
 import Room from "@/models/Room";
 import Review from "@/models/Review";
 import NearbyPlace from "@/models/NearbyPlace";
+import User from "@/models/User";
+import City from "@/models/City";
 import mongoose from "mongoose";
 
 export async function GET(

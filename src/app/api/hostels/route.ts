@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Hostel from "@/models/Hostel";
+import User from "@/models/User";
+import City from "@/models/City";
+import Room from "@/models/Room";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { requireRole, AuthError } from "@/lib/authGuard";
@@ -58,12 +61,40 @@ export async function GET(request: NextRequest) {
       .populate("cityId", "name slug")
       .populate("adminId", "name phone")
       .sort({ avgRating: -1, createdAt: -1 })
-      .limit(50);
+      .limit(50)
+      .lean();
+
+    const hostelIds = hostels.map((h: any) => h._id);
+    const rooms = await Room.find({ hostelId: { $in: hostelIds } }).lean();
+
+    const enrichedHostels = hostels.map((h: any) => {
+      const hostelRooms = rooms.filter(
+        (r: any) => r.hostelId?.toString() === h._id.toString()
+      );
+
+      const sharingPrices = hostelRooms.map((r: any) => ({
+        type: r.roomType || `${r.capacity}-Sharing`,
+        price: r.pricePerBed || 5000,
+        capacity: r.capacity || 2,
+        available: (r.bedsAvailable ?? 1) > 0,
+        bedsLeft: r.bedsAvailable ?? 1,
+      }));
+
+      const prices = sharingPrices.map((p) => p.price);
+      const startingPrice = prices.length > 0 ? Math.min(...prices) : 4800;
+
+      return {
+        ...h,
+        rooms: hostelRooms,
+        sharingPrices,
+        startingPrice,
+      };
+    });
 
     return NextResponse.json({
       success: true,
-      count: hostels.length,
-      data: hostels,
+      count: enrichedHostels.length,
+      data: enrichedHostels,
     });
   } catch (error) {
     console.error("Database offline, serving verified sample Kerala hostels:", error);

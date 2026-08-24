@@ -44,6 +44,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
+import User from "@/models/User";
+
 // Protected endpoint: Admins or SuperAdmin fetch leads
 export async function GET(request: NextRequest) {
   try {
@@ -58,7 +60,13 @@ export async function GET(request: NextRequest) {
     if (session.user.role === "admin") {
       // Find admin's hostels
       const hostels = await Hostel.find({ adminId: session.user.id }).select("_id");
-      const hostelIds = hostels.map((h) => h._id);
+      let hostelIds = hostels.map((h) => h._id.toString());
+      if (hostelIds.length === 0) {
+        const userDoc = await User.findById(session.user.id);
+        if (userDoc && (userDoc as any).hostelId) {
+          hostelIds.push((userDoc as any).hostelId.toString());
+        }
+      }
       query.hostelId = { $in: hostelIds };
     }
 
@@ -91,15 +99,33 @@ export async function PATCH(request: NextRequest) {
     const { enquiryId, status } = await request.json();
     await connectDB();
 
-    const updated = await Enquiry.findByIdAndUpdate(
-      enquiryId,
-      { status },
-      { new: true }
-    );
+    const enquiry = await Enquiry.findById(enquiryId);
+    if (!enquiry) {
+      return NextResponse.json({ success: false, error: "Enquiry not found" }, { status: 404 });
+    }
+
+    // Role check: if admin, ensure enquiry belongs to their hostel
+    if (session.user.role === "admin") {
+      const hostel = await Hostel.findById(enquiry.hostelId);
+      const isOwner =
+        hostel &&
+        (hostel.adminId?.toString() === session.user.id.toString() ||
+          (await User.findById(session.user.id).then((u: any) => u?.hostelId?.toString() === enquiry.hostelId?.toString())));
+
+      if (!isOwner) {
+        return NextResponse.json(
+          { success: false, error: "Forbidden: You do not own this hostel" },
+          { status: 403 }
+        );
+      }
+    }
+
+    enquiry.status = status;
+    await enquiry.save();
 
     return NextResponse.json({
       success: true,
-      data: updated,
+      data: enquiry,
     });
   } catch (error) {
     console.error("Error updating enquiry status:", error);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
+import User from "@/models/User";
 import Hostel from "@/models/Hostel";
 import Room from "@/models/Room";
 import City from "@/models/City";
@@ -16,14 +17,28 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    // Find hostel owned by this admin
+    // 1. Find hostel owned by this admin
     let hostel = await Hostel.findOne({ adminId: session.user.id })
       .populate("cityId", "name slug")
       .lean();
 
-    // If none found, create a starter hostel for this admin
+    // 2. Fallback: Check if assigned by SuperAdmin via user.hostelId
     if (!hostel) {
-      let city = await City.findOne({ slug: "kochi" }) || await City.findOne({});
+      const userDoc = await User.findById(session.user.id);
+      if (userDoc && (userDoc as any).hostelId) {
+        hostel = await Hostel.findById((userDoc as any).hostelId)
+          .populate("cityId", "name slug")
+          .lean();
+        if (hostel) {
+          // Sync bidirectional ownership
+          await Hostel.findByIdAndUpdate(hostel._id, { $set: { adminId: session.user.id } });
+        }
+      }
+    }
+
+    // 3. If still none found, create a dedicated starter hostel exclusively for this admin
+    if (!hostel) {
+      let city = (await City.findOne({ slug: "kochi" })) || (await City.findOne({}));
       if (city) {
         const created = await Hostel.create({
           adminId: session.user.id,
@@ -81,7 +96,17 @@ export async function PUT(request: NextRequest) {
     let hostel = await Hostel.findOne({ adminId: session.user.id });
 
     if (!hostel) {
-      let city = await City.findOne({ slug: "kochi" }) || await City.findOne({});
+      const userDoc = await User.findById(session.user.id);
+      if (userDoc && (userDoc as any).hostelId) {
+        hostel = await Hostel.findById((userDoc as any).hostelId);
+        if (hostel) {
+          hostel.adminId = session.user.id as any;
+        }
+      }
+    }
+
+    if (!hostel) {
+      let city = (await City.findOne({ slug: "kochi" })) || (await City.findOne({}));
       hostel = await Hostel.create({
         adminId: session.user.id,
         name: body.name || "My Hostel",

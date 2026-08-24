@@ -6,6 +6,7 @@ import User from "@/models/User";
 import Hostel from "@/models/Hostel";
 import Review from "@/models/Review";
 import Enquiry from "@/models/Enquiry";
+import City from "@/models/City";
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,33 +50,43 @@ export async function GET(request: NextRequest) {
       .lean();
 
     // Map hostels for easy frontend rendering
-    const formattedHostels = hostels.map((h: any) => ({
-      id: h._id.toString(),
-      name: h.name,
-      locality: h.fullAddress?.split(",")?.[0]?.trim() || "Kerala",
-      city: h.cityId?.name || "Kochi",
-      type: h.hostelType || "boys",
-      adminName: h.adminId?.name || "Hostel Admin",
-      phone: h.adminId?.phone || "+91 98470 XXXXX",
-      status: h.status || "pending",
-      capacity: h.totalCapacity || 30,
-      coverImage: h.coverImage,
-      galleryImages: h.galleryImages || [],
-      amenities: h.amenities || [],
-      avgRating: h.avgRating || 4.5,
-    }));
+    const formattedHostels = hostels.map((h: any) => {
+      const matchedAdmin = admins.find(
+        (a: any) =>
+          (h.adminId && (h.adminId._id?.toString() === a._id.toString() || h.adminId.toString() === a._id.toString())) ||
+          (a.hostelId && a.hostelId.toString() === h._id.toString())
+      );
+
+      return {
+        id: h._id.toString(),
+        name: h.name,
+        locality: h.fullAddress?.split(",")?.[0]?.trim() || "Kerala",
+        city: h.cityId?.name || "Kochi",
+        type: h.hostelType || "boys",
+        adminName: h.adminId?.name || matchedAdmin?.name || "Hostel Admin",
+        phone: h.adminId?.phone || matchedAdmin?.phone || "+91 98470 XXXXX",
+        status: h.status || "pending",
+        capacity: h.totalCapacity || 30,
+        coverImage: h.coverImage,
+        galleryImages: h.galleryImages || [],
+        amenities: h.amenities || [],
+        avgRating: h.avgRating || 4.5,
+      };
+    });
 
     const formattedAdmins = admins.map((a: any) => {
       // find assigned hostel
       const assignedHostel = hostels.find(
-        (h: any) => h.adminId?._id?.toString() === a._id.toString() || h.adminId?.toString() === a._id.toString()
+        (h: any) =>
+          (h.adminId && (h.adminId._id?.toString() === a._id.toString() || h.adminId.toString() === a._id.toString())) ||
+          (a.hostelId && h._id?.toString() === a.hostelId.toString())
       );
       return {
         id: a._id.toString(),
         name: a.name,
         email: a.email,
         phone: a.phone || "",
-        hostelId: assignedHostel ? assignedHostel._id.toString() : "",
+        hostelId: assignedHostel ? assignedHostel._id.toString() : (a.hostelId ? a.hostelId.toString() : ""),
         hostelName: assignedHostel ? assignedHostel.name : "Unassigned Property",
         createdAt: new Date(a.createdAt).toLocaleDateString("en-IN", {
           day: "2-digit",
