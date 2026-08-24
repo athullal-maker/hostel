@@ -202,19 +202,6 @@ export default function HomePage() {
               </span>
             </h1>
 
-            {/* Glassmorphism Food & Freedom Pill */}
-            <div className="inline-flex flex-wrap items-center gap-2.5 px-4 py-2.5 bg-gradient-to-r from-purple-50/90 via-white to-purple-50/60 border border-purple-200/80 rounded-2xl text-xs sm:text-sm font-semibold shadow-xs backdrop-blur-sm">
-              <div className="w-6 h-6 rounded-lg bg-primary text-white flex items-center justify-center shadow-2xs shrink-0">
-                <Utensils className="w-3.5 h-3.5" />
-              </div>
-              <span className="text-charcoal font-bold">
-                Make your own food or take a subscription
-              </span>
-              <span className="hidden sm:inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                0% Brokerage
-              </span>
-            </div>
-
             {/* Search Bar Component */}
             <div className="pt-1">
               <SearchHeroBar />
