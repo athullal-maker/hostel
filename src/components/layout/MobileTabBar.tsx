@@ -16,25 +16,20 @@ import { Home, Search, CalendarCheck, User, ShieldCheck } from "lucide-react";
 export const MobileTabBar: React.FC = () => {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const role = session?.user?.role;
 
-  const accountHref =
-    role === "superadmin"
-      ? "/superadmin/dashboard"
-      : role === "admin"
-      ? "/admin/dashboard"
-      : session
-      ? "/account/bookings"
-      : "/login";
+  const isAdminRoute = pathname?.startsWith("/admin") || pathname?.startsWith("/superadmin");
+  if (isAdminRoute) {
+    return null;
+  }
 
-  const accountLabel = role === "superadmin" || role === "admin" ? "Admin" : session ? "Account" : "Sign In";
-  const AccountIcon = role === "superadmin" || role === "admin" ? ShieldCheck : User;
+  const accountHref = session ? "/account/bookings" : "/login";
+  const accountLabel = session ? "Account" : "Sign In";
 
   const tabs = [
     { href: "/", label: "Home", icon: Home, match: (p: string) => p === "/" },
     { href: "/search", label: "Search", icon: Search, match: (p: string) => p.startsWith("/search") || p.startsWith("/hostel") },
     { href: "/account/bookings", label: "Bookings", icon: CalendarCheck, match: (p: string) => p.startsWith("/account/bookings") },
-    { href: accountHref, label: accountLabel, icon: AccountIcon, match: (p: string) => p.startsWith(accountHref) },
+    { href: accountHref, label: accountLabel, icon: User, match: (p: string) => p.startsWith(accountHref) },
   ];
 
   return (

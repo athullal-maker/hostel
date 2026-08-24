@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
   MapPin,
@@ -15,60 +16,104 @@ import {
   Phone,
   Mail,
   Building,
+  ExternalLink,
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 
 export const Navbar: React.FC = () => {
+  const pathname = usePathname();
   const { data: session } = useSession();
   const user = session?.user;
 
-  return (
-    <header className="sticky top-0 z-40 bg-white border-b border-surface-border shadow-2xs">
-      {/* Top micro-bar for quick contact & hubs — primary nav lives in the
-          mobile bottom tab bar now, so this promo strip is desktop-only. */}
-      <div className="hidden sm:block bg-charcoal text-surface text-xs py-1.5 px-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="bg-primary text-white text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-[3px]">
-              Direct Hostels & Co-Living
-            </span>
-            <span className="hidden sm:inline text-slate-300">
-              Zero brokerage • Direct resident warden & manager contacts
-            </span>
-          </div>
+  const isAdminRoute = pathname?.startsWith("/admin") || pathname?.startsWith("/superadmin");
+  const isSuperAdminRoute = pathname?.startsWith("/superadmin");
 
-          <div className="flex items-center gap-4 text-[11px] font-medium text-slate-300">
-            <a
-              href="tel:+918884518010"
-              className="hidden md:flex items-center gap-1 hover:text-white transition-colors"
-            >
-              <Phone className="w-3 h-3 text-primary" />
-              <span>+91 88845 18010</span>
-            </a>
-            <a
-              href="mailto:info@keralahostels.in"
-              className="hidden lg:flex items-center gap-1 hover:text-white transition-colors"
-            >
-              <Mail className="w-3 h-3 text-primary" />
-              <span>info@keralahostels.in</span>
-            </a>
-            <span className="text-slate-600 hidden md:inline">•</span>
-            <Link
-              href="/search?state=kerala&district=ernakulam&city=kakkanad"
-              className="hover:text-white hover:underline transition-colors hidden sm:inline"
-            >
-              Kochi Infopark
-            </Link>
-            <Link
-              href="/search?state=kerala&district=thiruvananthapuram&city=kazhakkoottam"
-              className="hover:text-white hover:underline transition-colors hidden sm:inline"
-            >
-              TVM Technopark
-            </Link>
+  // ================= ADMIN & SUPERADMIN DEDICATED MONOCHROME NAVBAR =================
+  if (isAdminRoute) {
+    return (
+      <header className="sticky top-0 z-40 bg-white border-b border-neutral-200 shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 gap-4">
+            {/* Left: Brand + Role Badge */}
+            <div className="flex items-center gap-3">
+              <Link href={isSuperAdminRoute ? "/superadmin/dashboard" : "/admin/dashboard"} className="flex items-center group shrink-0">
+                <span className="font-heading font-extrabold text-xl sm:text-2xl text-black tracking-tight">
+                  Kerala<span className="text-neutral-500">Hostels</span>
+                </span>
+              </Link>
+              <span className="bg-black text-white text-[10px] font-extrabold px-2 py-0.5 rounded tracking-wider uppercase">
+                {isSuperAdminRoute ? "SuperAdmin Console" : "Hostel Admin"}
+              </span>
+            </div>
+
+            {/* Middle: Switcher & Public Link */}
+            <div className="hidden md:flex items-center gap-2">
+              <Link
+                href="/"
+                target="_blank"
+                className="flex items-center gap-1 text-xs font-semibold text-neutral-600 hover:text-black px-3 py-1.5 rounded-[6px] border border-neutral-200 hover:bg-neutral-50 transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                View Public Site
+              </Link>
+
+              {user?.role === "superadmin" && (
+                <>
+                  <Link
+                    href="/superadmin/dashboard"
+                    className={`text-xs font-bold px-3 py-1.5 rounded-[6px] transition-colors ${
+                      isSuperAdminRoute
+                        ? "bg-black text-white shadow-2xs"
+                        : "bg-white text-neutral-700 hover:text-black border border-neutral-200 hover:bg-neutral-50"
+                    }`}
+                  >
+                    Governance Portal
+                  </Link>
+                  <Link
+                    href="/admin/dashboard"
+                    className={`text-xs font-bold px-3 py-1.5 rounded-[6px] transition-colors ${
+                      pathname?.startsWith("/admin")
+                        ? "bg-black text-white shadow-2xs"
+                        : "bg-white text-neutral-700 hover:text-black border border-neutral-200 hover:bg-neutral-50"
+                    }`}
+                  >
+                    Property Admin
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Right: User Profile + Logout */}
+            <div className="flex items-center gap-2">
+              {user && (
+                <div className="flex items-center gap-2 bg-neutral-50 border border-neutral-200 px-3 py-1.5 rounded-[6px] min-h-[38px]">
+                  <User className="w-3.5 h-3.5 text-black" />
+                  <span className="text-xs font-semibold text-black max-w-[120px] sm:max-w-[160px] truncate">
+                    {user.name || user.email}
+                  </span>
+                  <span className="bg-neutral-200 text-black border border-neutral-300 text-[10px] font-bold px-1.5 py-0.2 rounded uppercase">
+                    {user.role}
+                  </span>
+                </div>
+              )}
+
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                title="Sign Out"
+                className="p-2 text-neutral-600 hover:text-black hover:bg-neutral-100 rounded-[6px] border border-neutral-200 transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
+    );
+  }
 
+  // ================= STANDARD PUBLIC NAVBAR =================
+  return (
+    <header className="sticky top-0 z-40 bg-white border-b border-surface-border shadow-2xs">
       {/* Main Navigation Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-4">
@@ -102,93 +147,42 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Right Action Links */}
-          <nav className="flex items-center gap-2 sm:gap-3">
+          <nav className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <Link
-              href="/admin/login"
-              className="hidden lg:flex items-center gap-1 text-xs font-bold text-charcoal hover:text-primary px-2 py-1.5 transition-colors"
+              href="/admin/register"
+              className="inline-flex items-center gap-1 text-xs font-bold text-charcoal hover:text-primary px-2.5 sm:px-3 py-2 rounded-[6px] border border-surface-border hover:border-primary/40 bg-surface/50 hover:bg-primary-50/50 transition-colors"
             >
-              <Building className="w-3.5 h-3.5 text-primary" />
-              LIST YOUR PROPERTY
+              <Building className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span className="hidden xs:inline sm:inline">List Property</span>
+              <span className="xs:hidden sm:hidden">List</span>
             </Link>
-
-            <Link
-              href="/style-guide"
-              className="hidden sm:flex items-center gap-1 text-xs font-semibold text-charcoal-muted hover:text-charcoal px-2 py-1.5 transition-colors"
-            >
-              <Layers className="w-3.5 h-3.5" />
-              Style Guide
-            </Link>
-
-            {/* Role dashboard shortcut chips are also reachable via the mobile
-                bottom tab bar's Account tab, so they're desktop-only here to
-                keep the mobile bar uncluttered. Sign In stays visible at every
-                size since it's the primary action for a signed-out visitor. */}
-            {user?.role === "superadmin" && (
-              <Link
-                href="/superadmin/dashboard"
-                className="hidden md:flex items-center gap-1 text-xs font-semibold text-primary-700 hover:text-primary-900 px-2.5 py-1.5 bg-primary-50 border border-primary/30 rounded-[6px] min-h-[40px]"
-              >
-                <ShieldAlert className="w-3.5 h-3.5" />
-                Superadmin
-              </Link>
-            )}
-
-            {(user?.role === "admin" || user?.role === "superadmin") && (
-              <Link
-                href="/admin/dashboard"
-                className="hidden md:flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-700 px-2.5 py-1.5 bg-primary-50 border border-primary/30 rounded-[6px] min-h-[40px]"
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                Admin Dashboard
-              </Link>
-            )}
 
             {user ? (
-              <div className="flex items-center gap-2">
-                <div className="hidden sm:flex items-center gap-1.5 text-xs bg-surface border border-surface-border px-2.5 py-1.5 rounded-[6px] min-h-[40px]">
-                  <User className="w-3.5 h-3.5 text-primary" />
-                  <span className="font-semibold text-charcoal max-w-[90px] sm:max-w-[120px] truncate">
-                    {user.name || user.email}
-                  </span>
-                  <Badge
-                    variant={
-                      user.role === "superadmin"
-                        ? "danger"
-                        : user.role === "admin"
-                        ? "primary"
-                        : "neutral"
-                    }
-                    size="sm"
-                  >
-                    {user.role}
-                  </Badge>
-                </div>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Link
+                  href="/account/bookings"
+                  className="flex items-center gap-1 text-xs font-semibold text-charcoal bg-surface hover:bg-primary-50 border border-surface-border hover:border-primary/30 px-2.5 sm:px-3 py-1.5 rounded-[6px] transition-colors min-h-[38px]"
+                >
+                  <User className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span className="hidden sm:inline">My Account</span>
+                  <span className="sm:hidden">Account</span>
+                </Link>
 
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
                   title="Sign Out"
-                  className="p-2 text-charcoal-muted hover:text-primary-900 hover:bg-primary-50 rounded-[6px] border border-surface-border transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
+                  className="p-2 text-charcoal-muted hover:text-primary-700 hover:bg-primary-50 rounded-[6px] border border-surface-border transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/login"
-                  className="bg-primary hover:bg-primary-700 active:bg-primary-800 text-white text-xs font-bold px-4 py-2 rounded-[8px] transition-colors shadow-sm inline-flex items-center gap-1 min-h-[38px] uppercase tracking-wide"
-                >
-                  <span>Sign In</span>
-                </Link>
-
-                <Link
-                  href="/admin/login"
-                  className="bg-charcoal hover:bg-charcoal text-white text-xs font-bold px-3 py-2 rounded-[8px] transition-colors shadow-sm hidden sm:inline-flex items-center gap-1.5 min-h-[38px]"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-                  <span>Admin</span>
-                </Link>
-              </div>
+              <Link
+                href="/login"
+                className="bg-primary hover:bg-primary-700 active:bg-primary-800 text-white text-xs font-bold px-3 sm:px-4 py-2 rounded-[6px] transition-colors shadow-sm inline-flex items-center gap-1 min-h-[38px]"
+              >
+                <span>Sign In</span>
+              </Link>
             )}
           </nav>
         </div>

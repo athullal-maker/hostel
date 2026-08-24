@@ -12,6 +12,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/api/hostels") ||
     pathname.includes(".") ||
     pathname === "/admin/login" ||
+    pathname === "/admin/register" ||
     pathname === "/login" ||
     pathname === "/signup" ||
     pathname === "/style-guide" ||
@@ -49,8 +50,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 4. Protection for Admin routes (/admin/*, excluding /admin/login)
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+  // 4. Protection for Admin routes (/admin/*, excluding /admin/login and /admin/register)
+  if (pathname.startsWith("/admin") && pathname !== "/admin/login" && pathname !== "/admin/register") {
     if (!token) {
       const loginUrl = new URL("/admin/login", request.url);
       loginUrl.searchParams.set("callbackUrl", pathname);

@@ -38,7 +38,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
           <Link
             href="/"
             itemProp="item"
-            className="flex items-center gap-1 text-charcoal-muted hover:text-primary transition-colors"
+            className="flex items-center gap-1 text-neutral-500 hover:text-black transition-colors font-medium"
           >
             <Home className="w-3.5 h-3.5" />
             <span itemProp="name">Home</span>
@@ -58,20 +58,20 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
               itemType="https://schema.org/ListItem"
               className="flex items-center gap-1.5"
             >
-              <ChevronRight className="w-3 h-3 text-surface-border shrink-0" />
+              <ChevronRight className="w-3 h-3 text-neutral-300 shrink-0" />
               {item.href && !isLast ? (
                 <Link
                   href={item.href}
                   itemProp="item"
-                  className="hover:text-primary hover:underline text-charcoal-muted transition-colors"
+                  className="hover:text-black hover:underline text-neutral-500 transition-colors font-medium"
                 >
                   <span itemProp="name">{item.label}</span>
                 </Link>
               ) : (
                 <span
                   itemProp="name"
-                  className={`font-semibold ${
-                    isLast ? "text-primary" : "text-charcoal"
+                  className={`font-bold ${
+                    isLast ? "text-black" : "text-neutral-700"
                   }`}
                 >
                   {item.label}

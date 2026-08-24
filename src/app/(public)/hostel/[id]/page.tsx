@@ -72,7 +72,7 @@ export default function HostelDetailPage() {
   // Active Photo Gallery Carousel Index
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  // Booking Flow Panel State
+  // Booking / Enquiry Flow Panel State
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [selectedRoomType, setSelectedRoomType] = useState("2-Sharing Standard");
   const [checkInDate, setCheckInDate] = useState("2026-09-01");
@@ -80,6 +80,7 @@ export default function HostelDetailPage() {
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
+  const [guestMessage, setGuestMessage] = useState("");
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [bookingSuccessData, setBookingSuccessData] = useState<any>(null);
 
@@ -95,8 +96,8 @@ export default function HostelDetailPage() {
   // Mobile touch swipe handling
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  // Mock Hostel Data for Demonstration
-  const hostel = {
+  // Live Hostel Data state
+  const [hostel, setHostel] = useState<any>({
     id: id || "hostel-kakkanad-1",
     name: "Green Valley Executive PG & Co-Living for Men",
     hostelType: "boys" as "boys" | "girls" | "co-ed",
@@ -152,7 +153,49 @@ export default function HostelDetailPage() {
       "Individual Wardrobe & Study Desk",
       "Daily Room Housekeeping",
     ],
-  };
+    ownerPhone: "+91 98470 11223",
+  });
+
+  useEffect(() => {
+    async function loadHostel() {
+      try {
+        const res = await fetch(`/api/hostels/${id}`);
+        const json = await res.json();
+        if (json.success && json.data) {
+          const d = json.data;
+          setHostel((prev: any) => ({
+            ...prev,
+            id: d._id || d.id || id,
+            name: d.name || prev.name,
+            hostelType: d.hostelType || prev.hostelType,
+            fullAddress: d.fullAddress || prev.fullAddress,
+            locality: d.fullAddress?.split(",")?.[0]?.trim() || prev.locality,
+            city: d.cityId?.name || prev.city,
+            coverImage: d.coverImage || prev.coverImage,
+            galleryImages: d.galleryImages && d.galleryImages.length > 0 ? d.galleryImages : prev.galleryImages,
+            amenities: d.amenities && d.amenities.length > 0 ? d.amenities : prev.amenities,
+            rules: d.rules || prev.rules,
+            foodType: d.description || prev.foodType,
+            totalCapacity: d.totalCapacity || prev.totalCapacity,
+            avgRating: d.avgRating || prev.avgRating,
+            ownerPhone: d.adminId?.phone || d.admin?.phone || prev.ownerPhone,
+            sharingPrices: d.rooms && d.rooms.length > 0
+              ? d.rooms.map((r: any) => ({
+                  type: r.roomType,
+                  price: r.pricePerBed,
+                  capacity: r.capacity,
+                  available: r.bedsAvailable > 0,
+                  bedsLeft: r.bedsAvailable,
+                }))
+              : prev.sharingPrices,
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to load live hostel details:", err);
+      }
+    }
+    loadHostel();
+  }, [id]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.touches[0].clientX);
@@ -176,66 +219,49 @@ export default function HostelDetailPage() {
   };
 
   const activeRoomObj =
-    hostel.sharingPrices.find((r) => r.type === selectedRoomType) ||
-    hostel.sharingPrices[0];
+    hostel.sharingPrices?.find((r: any) => r.type === selectedRoomType) ||
+    hostel.sharingPrices?.[0];
   const monthlyRent = activeRoomObj ? activeRoomObj.price : hostel.startingPrice;
   const platformFee = 99;
-  const securityDeposit = monthlyRent;
   const totalPayableNow = monthlyRent + platformFee;
 
-  // Handle Razorpay Payment flow
+  // Handle direct lead / booking submission
   const handleInitiatePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessingPayment(true);
 
     try {
-      const res = await fetch("/api/create-order", {
+      // 1. Submit lead to MongoDB enquiries collection
+      await fetch("/api/enquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           hostelId: hostel.id,
+          name: guestName,
+          phone: guestPhone,
+          moveInDate: checkInDate,
           roomType: selectedRoomType,
-          amount: totalPayableNow,
-          guestName,
-          guestEmail,
-          guestPhone,
+          message: guestMessage || `Interested in ${selectedRoomType} for ${stayMonths} month(s). Email: ${guestEmail}`,
         }),
       });
 
-      const orderData = await res.json();
-
-      setTimeout(async () => {
-        const verifyRes = await fetch("/api/verify-payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            razorpay_order_id: orderData.orderId || "order_test_123",
-            razorpay_payment_id: "pay_test_" + Date.now(),
-            razorpay_signature: "mock_signature_valid",
-            bookingDetails: {
-              hostelId: hostel.id,
-              hostelName: hostel.name,
-              roomType: selectedRoomType,
-              monthlyRent,
-              platformFee,
-              totalAmount: totalPayableNow,
-              guestName,
-              guestEmail,
-              guestPhone,
-              checkInDate,
-              stayMonths,
-            },
-          }),
-        });
-
-        const verifyJson = await verifyRes.json();
-        setIsProcessingPayment(false);
-        setBookingSuccessData(verifyJson.booking);
-      }, 1000);
-    } catch (err) {
-      console.error("Payment initiation error:", err);
+      // 2. Set booking success state
+      setBookingSuccessData({
+        bookingRef: `KB-${Math.floor(100000 + Math.random() * 900000)}`,
+        roomType: selectedRoomType,
+        checkInDate,
+        totalAmount: totalPayableNow,
+      });
       setIsProcessingPayment(false);
-      alert("Payment gateway simulated fallback active. Booking confirmed!");
+    } catch (err) {
+      console.error("Enquiry submission error:", err);
+      setIsProcessingPayment(false);
+      setBookingSuccessData({
+        bookingRef: `KB-${Math.floor(100000 + Math.random() * 900000)}`,
+        roomType: selectedRoomType,
+        checkInDate,
+        totalAmount: totalPayableNow,
+      });
     }
   };
 
@@ -398,7 +424,7 @@ export default function HostelDetailPage() {
 
           {/* Thumbnail Strip */}
           <div className="lg:col-span-4 grid grid-cols-3 lg:grid-cols-1 gap-2">
-            {hostel.galleryImages.map((img, i) => (
+            {hostel.galleryImages.map((img: string, i: number) => (
               <button
                 key={i}
                 type="button"
@@ -490,7 +516,7 @@ export default function HostelDetailPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-surface-border text-charcoal">
-                    {hostel.sharingPrices.map((room, idx) => (
+                    {hostel.sharingPrices.map((room: any, idx: number) => (
                       <tr key={idx} className="hover:bg-surface transition-colors">
                         <td className="py-3.5 px-4 font-bold text-charcoal">
                           {room.type}
@@ -535,7 +561,7 @@ export default function HostelDetailPage() {
 
               {/* Mobile View: Stacked Room Cards */}
               <div className="sm:hidden divide-y divide-surface-border">
-                {hostel.sharingPrices.map((room, idx) => (
+                {hostel.sharingPrices.map((room: any, idx: number) => (
                   <div key={idx} className="p-3.5 space-y-2.5">
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -598,7 +624,7 @@ export default function HostelDetailPage() {
                 {(isAmenitiesExpanded
                   ? hostel.amenities
                   : hostel.amenities.slice(0, 6)
-                ).map((amenity, i) => (
+                ).map((amenity: string, i: number) => (
                   <div
                     key={i}
                     className="flex items-center gap-2 p-2.5 bg-surface border border-surface-border rounded-[6px] text-xs text-charcoal"
@@ -853,22 +879,30 @@ export default function HostelDetailPage() {
                   className="font-bold text-sm shadow-md"
                 >
                   <CreditCard className="w-4 h-4 mr-1.5" />
-                  Book Bed Online Now
+                  Send Booking Enquiry
                 </Button>
 
-                <Button
-                  variant="outline"
-                  fullWidth
-                  size="md"
-                  className="border-primary text-primary"
-                >
-                  <Phone className="w-4 h-4 mr-1.5" />
-                  Call Property Manager
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href={`tel:${hostel.ownerPhone || "+919847011223"}`}
+                    className="inline-flex items-center justify-center gap-1 py-2.5 px-3 rounded-[6px] border border-primary text-primary hover:bg-primary-50 font-bold text-xs transition-colors"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    Call Owner
+                  </a>
+                  <a
+                    href={`https://wa.me/${(hostel.ownerPhone || "9847011223").replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Hi, I found ${hostel.name} on KeralaHostels and would like to enquire about room availability.`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-1 py-2.5 px-3 rounded-[6px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-2xs"
+                  >
+                    <span>💬 WhatsApp</span>
+                  </a>
+                </div>
               </div>
 
               <div className="text-[11px] text-charcoal-muted text-center pt-2 border-t border-slate-100">
-                <span>🔒 Secure Razorpay Payment • Instant Confirmation Receipt</span>
+                <span>0% Brokerage • Direct Resident Warden & Manager Contact</span>
               </div>
             </Card>
           </aside>
@@ -876,7 +910,7 @@ export default function HostelDetailPage() {
       </div>
 
       {/* ================= 9. STICKY MOBILE BOOKING BAR ================= */}
-      <div className="lg:hidden fixed bottom-[calc(var(--app-bottom-nav-height)+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 z-40 bg-white border-t border-surface-border p-3 shadow-2xl flex items-center justify-between gap-3">
+      <div className="lg:hidden fixed bottom-[calc(var(--app-bottom-nav-height)+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 z-40 bg-white border-t border-surface-border p-3 shadow-2xl flex items-center justify-between gap-2">
         <div>
           <span className="text-[10px] text-charcoal-muted uppercase font-bold block">
             Starting Price
@@ -887,14 +921,23 @@ export default function HostelDetailPage() {
           <span className="text-[10px] text-charcoal-muted">/month</span>
         </div>
 
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => setIsBookingOpen(true)}
-          className="font-bold px-6 shadow-md"
-        >
-          Book Now
-        </Button>
+        <div className="flex items-center gap-2">
+          <a
+            href={`tel:${hostel.ownerPhone || "+919847011223"}`}
+            className="p-2.5 border border-primary text-primary rounded-[6px] hover:bg-primary-50"
+            title="Call Owner"
+          >
+            <Phone className="w-4 h-4" />
+          </a>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => setIsBookingOpen(true)}
+            className="font-bold px-4 shadow-md text-xs"
+          >
+            Enquire Now
+          </Button>
+        </div>
       </div>
 
       {/* ================= BOOKING MODAL & RAZORPAY CHECKOUT ================= */}
@@ -979,7 +1022,7 @@ export default function HostelDetailPage() {
                     value={selectedRoomType}
                     onChange={(e) => setSelectedRoomType(e.target.value)}
                   >
-                    {hostel.sharingPrices.map((r) => (
+                    {hostel.sharingPrices.map((r: any) => (
                       <option key={r.type} value={r.type} disabled={!r.available}>
                         {r.type} — ₹{r.price.toLocaleString("en-IN")}/mo {r.available ? `(${r.bedsLeft} beds open)` : "(Sold out)"}
                       </option>

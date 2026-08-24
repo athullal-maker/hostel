@@ -10,7 +10,6 @@ import {
   Phone,
   ArrowRight,
   Clock,
-  Sparkles,
   Zap,
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
@@ -203,8 +202,8 @@ export const HostelCard: React.FC<HostelCardProps> = ({
         {/* Action Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-3 mt-3 border-t border-slate-100 gap-2">
           <div className="hidden sm:flex items-center gap-1 text-xs text-charcoal-muted order-2 sm:order-1">
-            <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span>100% Verified Property • Instant Booking</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span>100% Verified Property • Direct Contact</span>
           </div>
 
           <div className="flex items-center gap-2 order-1 sm:order-2">

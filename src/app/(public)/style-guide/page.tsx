@@ -11,7 +11,6 @@ import {
   Check,
   Copy,
   Layers,
-  Sparkles,
   ArrowRight,
   Filter,
   CheckCircle2,
@@ -37,37 +36,37 @@ export default function StyleGuidePage() {
 
   const colorTokens = [
     {
-      group: "Brand Blue Scale (colors.primary)",
-      desc: "One hue for the whole product — primary actions, links, ratings, and status badges all draw from this single blue scale",
+      group: "Toxic Violet Scale (colors.primary)",
+      desc: "High-energy electric toxic violet palette driving all primary actions, focal badges, and brand highlights",
       swatches: [
-        { name: "50", hex: "#EFF6FF", cssClass: "bg-primary-50", textClass: "text-primary" },
-        { name: "100", hex: "#DBEAFE", cssClass: "bg-primary-100", textClass: "text-primary" },
-        { name: "300", hex: "#93C5FD", cssClass: "bg-primary-300", textClass: "text-primary-900" },
-        { name: "500 (light)", hex: "#3B82F6", cssClass: "bg-primary-500", textClass: "text-white" },
-        { name: "600 (DEFAULT)", hex: "#2563EB", cssClass: "bg-primary", textClass: "text-white" },
-        { name: "700 (dark)", hex: "#1D4ED8", cssClass: "bg-primary-700", textClass: "text-white" },
-        { name: "800", hex: "#1E40AF", cssClass: "bg-primary-800", textClass: "text-white" },
-        { name: "900", hex: "#1E3A8A", cssClass: "bg-primary-900", textClass: "text-white" },
+        { name: "50", hex: "#FAF5FF", cssClass: "bg-primary-50", textClass: "text-primary" },
+        { name: "100", hex: "#F3E8FF", cssClass: "bg-primary-100", textClass: "text-primary" },
+        { name: "300", hex: "#D8B4FE", cssClass: "bg-primary-300", textClass: "text-primary-900" },
+        { name: "500 (light)", hex: "#A855F7", cssClass: "bg-primary-500", textClass: "text-white" },
+        { name: "600 (DEFAULT)", hex: "#9333EA", cssClass: "bg-primary", textClass: "text-white" },
+        { name: "700 (dark)", hex: "#7E22CE", cssClass: "bg-primary-700", textClass: "text-white" },
+        { name: "800", hex: "#6B21A8", cssClass: "bg-primary-800", textClass: "text-white" },
+        { name: "900", hex: "#581C87", cssClass: "bg-primary-900", textClass: "text-white" },
       ],
     },
     {
-      group: "Surface & Backgrounds (colors.surface)",
-      desc: "Clean modern slate-50 background and crisp white cards with subtle borders",
+      group: "Soft Chrome Surfaces (colors.surface)",
+      desc: "Silky soft chrome metallic light gray surfaces and platinum card containers",
       swatches: [
-        { name: "DEFAULT (Page BG)", hex: "#F8FAFC", cssClass: "bg-surface", textClass: "text-charcoal" },
+        { name: "DEFAULT (Chrome Page BG)", hex: "#F4F6F9", cssClass: "bg-surface", textClass: "text-charcoal" },
         { name: "card (Solid White)", hex: "#FFFFFF", cssClass: "bg-white", textClass: "text-charcoal" },
-        { name: "muted (Sub-surface)", hex: "#F1F5F9", cssClass: "bg-surface-muted", textClass: "text-charcoal" },
-        { name: "border (Divider)", hex: "#E2E8F0", cssClass: "bg-surface-border", textClass: "text-charcoal" },
-        { name: "border-strong", hex: "#CBD5E1", cssClass: "bg-surface-border-strong", textClass: "text-charcoal" },
+        { name: "muted (Sub-surface)", hex: "#EAEFF5", cssClass: "bg-surface-muted", textClass: "text-charcoal" },
+        { name: "border (Divider)", hex: "#DCE3EC", cssClass: "bg-surface-border", textClass: "text-charcoal" },
+        { name: "border-strong", hex: "#B9C7D6", cssClass: "bg-surface-border-strong", textClass: "text-charcoal" },
       ],
     },
     {
-      group: "Charcoal Slate (colors.charcoal)",
-      desc: "High-contrast slate charcoal typography scale",
+      group: "Deep Graphite Slate (colors.charcoal)",
+      desc: "High-contrast graphite typography and dark metallic accents",
       swatches: [
         { name: "DEFAULT (Heading)", hex: "#0F172A", cssClass: "bg-charcoal", textClass: "text-white" },
-        { name: "muted (Body / Secondary)", hex: "#64748B", cssClass: "bg-charcoal-muted", textClass: "text-white" },
-        { name: "subtle (Muted Icons)", hex: "#94A3B8", cssClass: "bg-charcoal-subtle", textClass: "text-white" },
+        { name: "muted (Body / Secondary)", hex: "#526071", cssClass: "bg-charcoal-muted", textClass: "text-white" },
+        { name: "subtle (Muted Icons)", hex: "#8896A6", cssClass: "bg-charcoal-subtle", textClass: "text-white" },
       ],
     },
   ];
@@ -78,14 +77,13 @@ export default function StyleGuidePage() {
       <div className="bg-white border border-surface-border rounded-[10px] p-4 sm:p-8 shadow-xs relative overflow-hidden">
         <div className="relative z-10 max-w-3xl space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-50 border border-primary/20 rounded-[4px] text-xs font-bold text-primary mb-3">
-            Hostel Booker • Single-Hue Blue Theme & Design Tokens v3.0
+            KeralaHostels • Toxic Violet & Soft Chrome Theme v4.0
           </div>
           <h1 className="font-heading text-xl sm:text-4xl font-extrabold text-charcoal tracking-tight">
             Design System & Living Style Guide
           </h1>
           <p className="text-sm sm:text-base text-charcoal-muted max-w-3xl mt-2 leading-relaxed">
-            A focused, mobile-first hostel &amp; co-living design system. One brand blue drives every action and status
-            indicator, paired with slate charcoal typography and dense info cards.
+            A high-energy, mobile-first design system featuring vibrant Toxic Violet brand accents set against silky Soft Chrome metallic surfaces.
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-slate-100 text-xs">
@@ -103,7 +101,7 @@ export default function StyleGuidePage() {
             </div>
             <div>
               <span className="text-charcoal-muted block font-bold">Primary Brand</span>
-              <span className="font-mono text-primary font-bold text-sm">#2563EB (Blue)</span>
+              <span className="font-mono text-primary font-bold text-sm">#9333EA (Toxic Violet)</span>
             </div>
           </div>
         </div>

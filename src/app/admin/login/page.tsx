@@ -23,6 +23,7 @@ function AdminLoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "";
   const errorParam = searchParams.get("error");
+  const registeredSuccess = searchParams.get("registered") === "success";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -92,6 +93,13 @@ function AdminLoginForm() {
           </div>
         </div>
 
+        {registeredSuccess && (
+          <div className="p-3 bg-primary-50 border border-primary-500/30 rounded-[6px] flex items-center gap-2 text-xs text-primary-700 font-bold">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-primary" />
+            <span>Admin account registered successfully! Please log in below.</span>
+          </div>
+        )}
+
         {error && (
           <div className="p-3 bg-primary-50 border border-primary-900/30 rounded-[6px] flex items-start gap-2 text-xs text-primary-900">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -144,17 +152,17 @@ function AdminLoginForm() {
           </Button>
         </form>
 
-        {/* Notice on Admin Account Provisioning */}
+        {/* Register Admin Account Link */}
         <div className="pt-4 border-t border-slate-100 space-y-2 text-center text-xs text-charcoal-muted">
-          <p className="text-[11px] text-charcoal-muted bg-surface p-2.5 rounded-[6px] border border-surface-border">
-            <span className="font-bold text-charcoal block mb-0.5">
-              Admin Accounts Provisioning Policy:
-            </span>
-            Hostel manager accounts cannot be self-registered. They are provisioned and audited directly by the Superadmin.
-          </p>
+          <div>
+            <span>Don&apos;t have an admin account? </span>
+            <Link href="/admin/register" className="text-primary font-bold hover:underline">
+              Register as Hostel Admin →
+            </Link>
+          </div>
 
           <div className="pt-1">
-            <Link href="/login" className="text-primary hover:underline text-xs font-bold">
+            <Link href="/login" className="text-charcoal-muted hover:underline text-[11px]">
               ← Switch to Resident / User Login
             </Link>
           </div>

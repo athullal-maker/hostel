@@ -12,7 +12,6 @@ import {
   Loader2,
   Building,
   Navigation,
-  Sparkles,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
@@ -205,14 +204,12 @@ export const CascadingLocationPicker: React.FC<CascadingLocationPickerProps> = (
       onLocationSelect(selectedState, selectedDistrict, selectedCity);
     }
 
-    if (autoRedirect) {
-      const params = new URLSearchParams();
-      if (selectedState) params.set("state", selectedState);
-      if (selectedDistrict) params.set("district", selectedDistrict);
-      if (selectedCity) params.set("city", selectedCity);
+    const params = new URLSearchParams();
+    if (selectedState) params.set("state", selectedState);
+    if (selectedDistrict) params.set("district", selectedDistrict);
+    if (selectedCity) params.set("city", selectedCity);
 
-      router.push(`/search?${params.toString()}`);
-    }
+    router.push(`/search?${params.toString()}`);
   };
 
   // Find readable names for display

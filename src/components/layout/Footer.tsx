@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Phone,
   Mail,
@@ -9,7 +10,13 @@ import {
 } from "lucide-react";
 
 export const Footer: React.FC = () => {
+  const pathname = usePathname();
   const [cookieConsent, setCookieConsent] = useState(true);
+
+  // Hide footer on Admin and SuperAdmin pages
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/superadmin")) {
+    return null;
+  }
 
   return (
     <footer className="bg-primary-50 text-charcoal border-t border-primary-200 mt-16 relative">
@@ -61,7 +68,7 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/admin/login" className="hover:text-primary font-bold text-primary transition-colors">
+                <Link href="/admin/register" className="hover:text-primary font-bold text-primary transition-colors">
                   List Your Property
                 </Link>
               </li>

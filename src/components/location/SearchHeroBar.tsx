@@ -161,7 +161,7 @@ export const SearchHeroBar: React.FC = () => {
           <CascadingLocationPicker
             initialState="kerala"
             onLocationSelect={handleLocationSelect}
-            autoRedirect={false}
+            autoRedirect={true}
           />
         </div>
       )}

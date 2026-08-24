@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, Suspense } from "react";
+import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -317,11 +317,12 @@ function SearchResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Location params from URL
+  // Location & query params from URL
   const stateParam = searchParams.get("state") || "kerala";
   const districtParam = searchParams.get("district") || "";
   const cityParam = searchParams.get("city") || "";
   const initialType = searchParams.get("type") || "all";
+  const qParam = (searchParams.get("q") || "").toLowerCase().trim();
 
   // Filter States
   const [selectedType, setSelectedType] = useState<string>(initialType);
@@ -331,6 +332,64 @@ function SearchResultsContent() {
   const [hasAcOnly, setHasAcOnly] = useState<boolean>(false);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<string>("recommended");
+
+  // Dynamic live hostels state
+  const [allHostels, setAllHostels] = useState<SearchHostel[]>(SEEDED_SEARCH_HOSTELS);
+
+  useEffect(() => {
+    async function loadLiveHostels() {
+      try {
+        const res = await fetch("/api/hostels");
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const formatted: SearchHostel[] = json.data.map((h: any) => ({
+            id: h._id || h.id,
+            name: h.name,
+            hostelType: h.hostelType || "boys",
+            stateSlug: "kerala",
+            districtSlug: h.cityId?.slug?.includes("trivandrum") ? "thiruvananthapuram" : "ernakulam",
+            citySlug: h.cityId?.slug || "kakkanad",
+            locality: h.fullAddress?.split(",")?.[0]?.trim() || "Kochi",
+            city: h.cityId?.name || "Kochi",
+            fullAddress: h.fullAddress || "Kerala",
+            distanceKm: 0.5,
+            distanceInfo: "Nearby central hub",
+            coverImage: h.coverImage || "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80",
+            galleryImages: h.galleryImages || [h.coverImage],
+            startingPrice: 5000,
+            totalCapacity: h.totalCapacity || 30,
+            bedsAvailable: 5,
+            sharingPrices: [
+              { type: "2-Sharing Standard", price: 6000, capacity: 2, available: true, bedsLeft: 2 },
+              { type: "3-Sharing Economy", price: 5000, capacity: 3, available: true, bedsLeft: 3 },
+            ],
+            avgRating: h.avgRating || 4.7,
+            totalReviews: 12,
+            isVerified: true,
+            foodIncluded: h.amenities?.includes("Homestyle Food Included") || false,
+            foodType: h.description || "Homestyle Kerala Meals Included",
+            curfew: h.rules || "No Night Curfew (Biometric)",
+            hasAC: h.amenities?.includes("AC Available") || false,
+            hasWifi: h.amenities?.includes("High-speed 100 Mbps Wi-Fi") || true,
+            amenities: h.amenities || ["Wi-Fi", "Food Included"],
+            checkInTime: h.checkInTime || "12:00 PM",
+            checkOutTime: h.checkOutTime || "11:00 AM",
+          }));
+
+          // Merge without duplicate IDs
+          const existingIds = new Set(formatted.map((f) => f.id));
+          const combined = [
+            ...formatted,
+            ...SEEDED_SEARCH_HOSTELS.filter((s) => !existingIds.has(s.id)),
+          ];
+          setAllHostels(combined);
+        }
+      } catch (err) {
+        console.error("Failed to load live hostels:", err);
+      }
+    }
+    loadLiveHostels();
+  }, []);
 
   // Mobile Filters Drawer
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
@@ -360,7 +419,18 @@ function SearchResultsContent() {
 
   // Filter & Sort Logic
   const filteredAndSortedHostels = useMemo(() => {
-    let result = SEEDED_SEARCH_HOSTELS.filter((hostel) => {
+    let result = allHostels.filter((hostel) => {
+      // 0. Keyword query search (q)
+      if (qParam) {
+        const queryMatches =
+          hostel.name.toLowerCase().includes(qParam) ||
+          hostel.locality.toLowerCase().includes(qParam) ||
+          hostel.city.toLowerCase().includes(qParam) ||
+          hostel.fullAddress.toLowerCase().includes(qParam) ||
+          hostel.amenities.some((a) => a.toLowerCase().includes(qParam)) ||
+          hostel.foodType?.toLowerCase().includes(qParam);
+        if (!queryMatches) return false;
+      }
       // 1. Location match
       if (districtParam && hostel.districtSlug !== districtParam) {
         return false;
@@ -418,6 +488,8 @@ function SearchResultsContent() {
 
     return result;
   }, [
+    allHostels,
+    qParam,
     districtParam,
     cityParam,
     selectedType,

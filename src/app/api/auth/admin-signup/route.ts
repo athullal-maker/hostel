@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     // 1. Basic validation
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
-        { success: false, error: "Name is required" },
+        { success: false, error: "Admin / Manager name is required" },
         { status: 400 }
       );
     }
@@ -66,33 +66,34 @@ export async function POST(request: NextRequest) {
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // 4. Create user with HARDCODED role: 'user' (never trust client input)
-    const newUser = await User.create({
+    // 4. Create admin user with role: 'admin'
+    const newAdmin = await User.create({
       name: name.trim(),
       email: normalizedEmail,
       phone: phone ? phone.trim() : undefined,
       passwordHash,
-      role: "user", // Security constraint: strictly hardcoded
+      role: "admin",
     });
 
     return NextResponse.json(
       {
         success: true,
-        message: "User account created successfully",
+        message: "Admin account registered successfully",
         user: {
-          id: newUser._id.toString(),
-          name: newUser.name,
-          email: newUser.email,
-          role: newUser.role,
+          id: newAdmin._id.toString(),
+          name: newAdmin.name,
+          email: newAdmin.email,
+          role: newAdmin.role,
         },
       },
       { status: 201 }
     );
   } catch (error: any) {
-    console.error("Signup error:", error);
+    console.error("Admin registration error:", error);
 
     // Handle MongoDB duplicate key error gracefully
     if (error?.code === 11000) {
+      // If error is due to an orphaned username index, try dropping it
       if (error.keyPattern?.username || error.message?.includes("username_1")) {
         try {
           await User.collection.dropIndex("username_1");
@@ -120,7 +121,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to create user account",
+        error: error instanceof Error ? error.message : "Failed to register admin account",
       },
       { status: 500 }
     );
