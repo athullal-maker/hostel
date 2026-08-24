@@ -69,21 +69,34 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="space-y-10 sm:space-y-16 pb-12 sm:pb-20 bg-white">
+    <div className="space-y-10 sm:space-y-16 pb-12 sm:pb-20 bg-white relative overflow-hidden">
+      {/* Subtle Ambient Background Mesh for Modern Atmosphere */}
+      <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-gradient-to-b from-purple-200/30 via-violet-100/20 to-transparent blur-3xl rounded-full -z-10" />
+
       {/* ================= HERO SECTION ================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-8 items-center">
-          {/* Left Column: Headline, Food Pill & Search Bar (7 columns) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+          {/* Left Column: Headline, Pill & Search Bar (7 columns) */}
           <div className="lg:col-span-7 space-y-5 sm:space-y-6">
-            {/* Big Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-[56px] font-extrabold text-charcoal tracking-tight leading-[1.08]">
-              Your Stay. <span className="text-primary">Your Way.</span>
+            {/* Stylish Headline with Toxic Violet Gradient */}
+            <h1 className="text-4xl sm:text-6xl lg:text-[64px] font-extrabold text-charcoal tracking-tight leading-[1.05]">
+              Your Stay.{" "}
+              <span className="bg-gradient-to-r from-purple-600 via-primary-500 to-indigo-600 bg-clip-text text-transparent drop-shadow-xs">
+                Your Way.
+              </span>
             </h1>
 
-            {/* Purple Pill Capsule */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-2.5 bg-primary-50 text-primary-700 rounded-xl text-xs sm:text-sm font-semibold shadow-2xs">
-              <Utensils className="w-4 h-4 text-primary shrink-0" />
-              <span>Make your own food or take a subscription</span>
+            {/* Glassmorphism Food & Freedom Pill */}
+            <div className="inline-flex flex-wrap items-center gap-2.5 px-4 py-2.5 bg-gradient-to-r from-purple-50/90 via-white to-purple-50/60 border border-purple-200/80 rounded-2xl text-xs sm:text-sm font-semibold shadow-xs backdrop-blur-sm">
+              <div className="w-6 h-6 rounded-lg bg-primary text-white flex items-center justify-center shadow-2xs shrink-0">
+                <Utensils className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-charcoal font-bold">
+                Make your own food or take a subscription
+              </span>
+              <span className="hidden sm:inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                0% Brokerage
+              </span>
             </div>
 
             {/* Search Bar Component */}
@@ -92,20 +105,28 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Right Column: Visual Card with Roommates on Sofa (5 columns) */}
+          {/* Right Column: Visual Card with Metallic Chrome Frame & Ambient Glow */}
           <div className="lg:col-span-5 relative">
-            <div className="relative rounded-[24px] sm:rounded-[32px] overflow-hidden bg-gradient-to-br from-primary-100 via-primary-200 to-primary-300 p-2.5 sm:p-3 shadow-xl border border-primary-200/80">
-              <div className="relative h-[260px] sm:h-[340px] lg:h-[430px] rounded-[18px] sm:rounded-[24px] overflow-hidden bg-primary-100">
+            {/* Ambient Violet Glow behind card */}
+            <div className="absolute -inset-1.5 bg-gradient-to-r from-purple-600/30 to-indigo-600/30 rounded-[34px] blur-xl opacity-70 -z-10" />
+
+            <div className="relative rounded-[28px] sm:rounded-[34px] overflow-hidden bg-gradient-to-br from-white via-purple-50/60 to-purple-100/50 p-2.5 sm:p-3 shadow-2xl border border-purple-200/70">
+              <div className="relative h-[280px] sm:h-[360px] lg:h-[450px] rounded-[20px] sm:rounded-[26px] overflow-hidden bg-purple-100">
                 <Image
                   src="https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=1000&q=80"
                   alt="Young roommates relaxing happily together in modern co-living space"
                   fill
                   priority
-                  className="object-cover object-center"
+                  className="object-cover object-center transform hover:scale-105 transition-transform duration-700"
                 />
 
+                {/* Floating Top-Left Hub Badge */}
+                <div className="absolute top-3.5 left-3.5 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-white tracking-wide border border-white/20">
+                  📍 Kochi • TVM • Calicut
+                </div>
+
                 {/* Floating Top-Right Rating Badge */}
-                <div className="absolute top-3.5 right-3.5 bg-white/95 backdrop-blur-sm px-3.5 py-1.5 rounded-full shadow-md border border-slate-100 flex items-center gap-1.5 text-xs font-bold text-charcoal">
+                <div className="absolute top-3.5 right-3.5 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-lg border border-white/80 flex items-center gap-1.5 text-xs font-bold text-charcoal">
                   <Star className="w-3.5 h-3.5 fill-primary text-primary" />
                   <span>4.8 / 5.0</span>
                   <span className="text-[10px] text-charcoal-muted font-normal">
@@ -114,21 +135,21 @@ export default function HomePage() {
                 </div>
 
                 {/* Floating Bottom Trust Strip */}
-                <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm p-3 rounded-xl shadow-md border border-slate-100 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-primary-50 text-primary flex items-center justify-center shrink-0">
+                <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-xl border border-white/90 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 shadow-xs">
                       <ShieldCheck className="w-4 h-4" />
                     </div>
                     <div>
-                      <span className="font-bold text-xs text-charcoal block">
+                      <span className="font-extrabold text-xs text-charcoal block">
                         100% Zero Brokerage
                       </span>
                       <span className="text-[10px] text-charcoal-muted">
-                        Direct manager contact & transparent pricing
+                        Direct manager contact & instant pricing
                       </span>
                     </div>
                   </div>
-                  <span className="text-xs font-bold text-primary shrink-0">
+                  <span className="text-xs font-extrabold text-primary bg-primary-50 px-2.5 py-1 rounded-lg border border-primary/20 shrink-0">
                     Verified ✓
                   </span>
                 </div>
